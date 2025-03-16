@@ -17,8 +17,14 @@ func main() {
 
 	// Define routes
 	http.HandleFunc("/api/products", handlers.CreateProductHandler) // POST
-	//TODO:: GET request handelt de id nog niet
-	http.HandleFunc("/api/products/{id}", handlers.GetProductHandler) // GET
+	http.HandleFunc("/api/products/{id}",
+		func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodGet {
+				handlers.GetProductHandler(w, r) // GET
+			} else if r.Method == http.MethodPatch {
+				handlers.PatchProductHandler(w, r) // PATCH
+			}
+		})
 
 	// Start server
 	log.Println("Starting server on :8080")

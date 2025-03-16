@@ -17,7 +17,7 @@ const (
 
 // Product represents the user entity in the database
 type Product struct {
-	ID           int          `json:"id"`
+	ID           int64        `json:"id"`
 	Name         string       `json:"name"`
 	Description  string       `json:"description"`
 	Status       string       `json:"status"`
@@ -54,18 +54,29 @@ func (p *Product) Validate() error {
 	return nil
 }
 
-// CreateProduct inserts a new product into the database
-func (p *Product) CreateProduct() (Product, error) {
+// SaveProduct inserts a new product into the database
+func (p *Product) SaveProduct() (Product, error) {
 	if err := p.Validate(); err != nil {
 		return Product{}, fmt.Errorf("Validation error: %s", err)
 	}
 
-	query := "INSERT INTO products (name, description, status, price, tax, discount, discount_type, stock, sku, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	result, err := database.DB.Exec(query, p.Name, p.Description, p.Status, p.Price, p.Tax, p.Discount, p.DiscountType, p.Stock, p.Sku, time.Now(), time.Now())
+	var query string
+	if p.ID == 0 {
+		query = fmt.Sprintf("INSERT INTO products (name, description, status, price, tax, discount, discount_type, stock, sku, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '%s', '%s')", time.Now(), time.Now())
+	} else {
+		query = fmt.Sprintf("UPDATE products SET name = ?, description = ?, status = ?, price = ?, tax = ?, discount = ?, discount_type = ?, stock = ?, sku = ?, updated_at = '%s' WHERE ID = '%d'", time.Now(), p.ID)
+	}
+	result, err := database.DB.Exec(query, p.Name, p.Description, p.Status, p.Price, p.Tax, p.Discount, p.DiscountType, p.Stock, p.Sku)
 	if err != nil {
 		return Product{}, fmt.Errorf("error creating product: %w", err)
 	}
 
+	// Just updating the product? no need to retrieve last inserted id.
+	if p.ID > 0 {
+		return GetProductByID(p.ID)
+	}
+
+	// Retrieve last inserted ID and retrieve product.
 	insertedID, err := result.LastInsertId()
 	if err != nil {
 		return Product{}, fmt.Errorf("Error fetching inserted ID", http.StatusInternalServerError)

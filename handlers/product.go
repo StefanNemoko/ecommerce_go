@@ -30,7 +30,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call the method in the Product model to create the product
-	product, err = product.CreateProduct()
+	product, err = product.SaveProduct()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -60,4 +60,33 @@ func GetProductHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+}
+
+func PatchProductHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := helpers.RetrieveIdFromUri(r.URL.Path)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid product ID %s", err), http.StatusBadRequest)
+		return
+	}
+
+	product, err := models.GetProductByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	err = json.NewDecoder(r.Body).Decode(&product)
+	if err != nil {
+		http.Error(w, "Invalid input: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	product.ID = id
+
+	_, err = product.SaveProduct()
+	if err != nil {
+		http.Error(w, "Error saving product: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
