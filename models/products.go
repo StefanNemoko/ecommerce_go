@@ -17,19 +17,19 @@ const (
 
 // Product represents the user entity in the database
 type Product struct {
-	ID           int       `json:"id"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	Status       string    `json:"status"`
-	Price        float32   `json:"price"`
-	Tax          float32   `json:"tax"`
-	Discount     float32   `json:"discount"`
-	DiscountType string    `json:"discount_type"`
-	Stock        int       `json:"stock"`
-	Sku          string    `json:"sku"`
-	CreatedAt    time.Time `json:"created_at,omitempty"`
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	DeletedAt    time.Time `json:"deleted_at,omitempty"`
+	ID           int          `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description"`
+	Status       string       `json:"status"`
+	Price        float32      `json:"price"`
+	Tax          float32      `json:"tax"`
+	Discount     float32      `json:"discount"`
+	DiscountType string       `json:"discount_type"`
+	Stock        int          `json:"stock"`
+	Sku          string       `json:"sku"`
+	CreatedAt    sql.NullTime `json:"created_at,omitempty"`
+	UpdatedAt    sql.NullTime `json:"updated_at,omitempty"`
+	DeletedAt    sql.NullTime `json:"deleted_at,omitempty"`
 }
 
 func (p *Product) Validate() error {

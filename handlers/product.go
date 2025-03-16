@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"ecommerce/helpers"
 	"ecommerce/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
 type ProductHandler struct {
@@ -44,8 +44,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetProductHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, err := strconv.ParseInt(idStr, 0, 64)
+	id, err := helpers.RetrieveIdFromUri(r.URL.Path)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Invalid product ID %s", err), http.StatusBadRequest)
 		return
