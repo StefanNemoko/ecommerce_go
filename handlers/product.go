@@ -8,19 +8,6 @@ import (
 	"net/http"
 )
 
-type ProductHandler struct {
-	ID           int     `json:"id"`
-	Name         string  `json:"name"`
-	Description  string  `json:"description"`
-	Status       string  `json:"status"`
-	Price        float32 `json:"price"`
-	Tax          float32 `json:"tax"`
-	Discount     float32 `json:"discount"`
-	DiscountType string  `json:"discount_type"`
-	Stock        int     `json:"stock"`
-	Sku          string  `json:"sku"`
-}
-
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 	var product models.Product
 	err := json.NewDecoder(r.Body).Decode(&product)
@@ -38,6 +25,29 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(product)
+	if err != nil {
+		return
+	}
+}
+
+func GetProductsHandler(w http.ResponseWriter) {
+	products, err := models.GetProducts()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error retrieveing products: \"%s\"", err), http.StatusBadRequest)
+		return
+	}
+
+	type Products struct {
+		TotalCount int              `json:"total_count"`
+		Items      []models.Product `json:"items"`
+	}
+
+	response := Products{
+		TotalCount: len(products),
+		Items:      products,
+	}
+
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		return
 	}

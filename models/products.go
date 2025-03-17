@@ -32,7 +32,7 @@ type Product struct {
 	DeletedAt    sql.NullTime `json:"deleted_at,omitempty"`
 }
 
-func (p *Product) Validate() error {
+func (p *Product) validate() error {
 	if p.Name == "" {
 		return errors.New("product name is required")
 	}
@@ -56,7 +56,7 @@ func (p *Product) Validate() error {
 
 // SaveProduct inserts a new product into the database
 func (p *Product) SaveProduct() (Product, error) {
-	if err := p.Validate(); err != nil {
+	if err := p.validate(); err != nil {
 		return Product{}, fmt.Errorf("Validation error: %s", err)
 	}
 
@@ -100,4 +100,27 @@ func GetProductByID(id int64) (Product, error) {
 	}
 
 	return product, nil
+}
+
+func GetProducts() ([]Product, error) {
+	// Retrieve rows
+	var products []Product
+	query := "SELECT * FROM products WHERE Status = ? ORDER BY created_at DESC"
+	rows, err := database.DB.Query(query, StatusActive)
+	if err != nil {
+		return products, fmt.Errorf("error retrieving products: %w", err)
+	}
+
+	for rows.Next() {
+		// Convert row to models.Product
+		var product Product
+		err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.Status, &product.Price, &product.Tax, &product.Discount, &product.DiscountType, &product.Stock, &product.Sku, &product.CreatedAt, &product.UpdatedAt, &product.DeletedAt)
+		if err != nil {
+			return products, fmt.Errorf("error retrieving products: %w", err)
+		}
+
+		// append model to collection.
+		products = append(products, product)
+	}
+	return products, nil
 }
